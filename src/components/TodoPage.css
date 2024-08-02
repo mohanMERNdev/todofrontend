@@ -1,0 +1,82 @@
+.card {
+    width: 100%;
+    max-width: 600px; 
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    background-color: #ffffff; 
+    text-align: center;
+  }
+  
+  h2 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  input[type="text"],
+  button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px; 
+  }
+  
+  input[type="text"] {
+    font-size: 16px;
+  }
+  
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3; 
+  }
+  
+  ul {
+    list-style-type: square;
+    padding: 0;
+  }
+  
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .todo-text {
+    flex: 1;
+    text-align: left;
+    padding: 10px;
+  }
+  
+  .edit-button,
+  .delete-button {
+    background-color: #007bff; 
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-left: 5px;
+  }
+  
+  .edit-button:hover,
+  .delete-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .delete-button {
+    background-color: #dc3545;
+  }
+  
+  .delete-button:hover {
+    background-color: #c82333;
+  }
+  
