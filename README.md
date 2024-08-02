@@ -8,6 +8,9 @@ Usage
 Components
  Login.js
    Handles user login functionality. If the user is new, they can navigate to the register page.
+   sample_date:
+       username:user4,
+       password:9999
 
  Register.js
    Handles user registration. After successful registration, the user is redirected to the login page.
