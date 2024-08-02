@@ -1,132 +1,112 @@
-
 import React, { Component } from 'react';
-import './TodoPage.css';
+import { Navigate } from 'react-router-dom'; // Import Navigate for redirection
+import './TodoPage.css'; // Import your CSS file
 
 class TodoPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      todos: [],     
+      todos: [],
       newTodo: '',
-      token: localStorage.getItem('token') || '', 
+      redirectToLogin: false,
     };
   }
 
   componentDidMount() {
-    this.fetchTodos();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.setState({ redirectToLogin: true });
+    } else {
+      this.fetchTodos();
+    }
   }
 
-  fetchTodos = async () => {
-    try {
-      const response = await fetch('https://todobackend-27q6.onrender.com/api/todos', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.state.token}`,
-          'Content-Type': 'application/json'
+  fetchTodos = () => {
+    const token = localStorage.getItem('token');
+    fetch('https://todobackend-27q6.onrender.com/api/todos', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => this.setState({ todos: data }))
+      .catch(error => console.error('Error fetching todos:', error));
+  };
+
+  handleChange = (e) => {
+    this.setState({ newTodo: e.target.value });
+  };
+
+  handleAddTodo = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    fetch('https://todobackend-27q6.onrender.com/api/todos', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text: this.state.newTodo })
+    })
+      .then(response => {
+        if (response.ok) {
+          this.fetchTodos();
+          this.setState({ newTodo: '' });
+        } else {
+          throw new Error('Failed to add todo');
         }
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      })
+      .catch(error => console.error('Error adding todo:', error));
+  };
+
+  handleDeleteTodo = (id) => {
+    const token = localStorage.getItem('token');
+    fetch(`https://todobackend-27q6.onrender.com/api/todos/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-      const data = await response.json();
-      this.setState({ todos: data });
-    } catch (error) {
-      console.error('Error fetching todos:', error);
-    }
-  };
-
-  handleInputChange = (event) => {
-    this.setState({ newTodo: event.target.value });
-  };
-
-  handleAddTodo = async () => {
-    try {
-      const response = await fetch('https://todobackend-27q6.onrender.com/api/todos', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.state.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: this.state.newTodo })
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      this.setState(prevState => ({
-        todos: [...prevState.todos, data],
-        newTodo: ''
-      }));
-    } catch (error) {
-      console.error('Error adding todo:', error);
-    }
-  };
-
-  handleDeleteTodo = async (id) => {
-    try {
-      const response = await fetch(`https://todobackend-27q6.onrender.com/api/todos/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${this.state.token}`,
-          'Content-Type': 'application/json'
+    })
+      .then(response => {
+        if (response.ok) {
+          this.fetchTodos();
+        } else {
+          throw new Error('Failed to delete todo');
         }
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      this.setState(prevState => ({
-        todos: prevState.todos.filter(todo => todo._id !== id)
-      }));
-    } catch (error) {
-      console.error('Error deleting todo:', error);
-    }
-  };
-
-  handleUpdateTodo = async (id, text) => {
-    try {
-      const response = await fetch(`https://todobackend-27q6.onrender.com/api/todos/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${this.state.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text })
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      this.setState(prevState => ({
-        todos: prevState.todos.map(todo => (todo._id === id ? data : todo))
-      }));
-    } catch (error) {
-      console.error('Error updating todo:', error);
-    }
+      })
+      .catch(error => console.error('Error deleting todo:', error));
   };
 
   render() {
+    if (this.state.redirectToLogin) {
+      return <Navigate to="/login" />; 
+    }
+
     return (
-      <div>
-        <h1>Todo Page</h1>
-        <input
-          type="text"
-          value={this.state.newTodo}
-          onChange={this.handleInputChange}
-          placeholder="Add a new todo"
-        />
-        <button onClick={this.handleAddTodo}>Add Todo</button>
+      <div className="card">
+        <h2>Todo List</h2>
+        <form onSubmit={this.handleAddTodo}>
+          <input
+            type="text"
+            value={this.state.newTodo}
+            onChange={this.handleChange}
+            placeholder="New todo"
+            required
+          />
+          <button type="submit">Add Todo</button>
+        </form>
         <ul>
-          {this.state.todos && this.state.todos.length > 0 ? (
-            this.state.todos.map(todo => (
-              <li key={todo._id}>
-                <span className="todo-text">{todo.text}</span>
-                <button className="edit-button" onClick={() => this.handleUpdateTodo(todo._id, prompt('New text:', todo.text))}>Edit</button>
+          {this.state.todos.map(todo => (
+            <li key={todo._id}>
+              <span className="todo-text">{todo.text}</span>
+              <div>
+                <button className="edit-button">Edit</button>
                 <button className="delete-button" onClick={() => this.handleDeleteTodo(todo._id)}>Delete</button>
-              </li>
-            ))
-          ) : (
-            <p>No todos found.</p>
-          )}
+              </div>
+            </li>
+          ))}
         </ul>
       </div>
     );
